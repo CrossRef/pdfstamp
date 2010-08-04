@@ -2,17 +2,13 @@ package org.crossref.pdfstamp;
 
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Image;
-import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.imageio.ImageIO;
 
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
@@ -22,11 +18,8 @@ import org.kohsuke.args4j.Option;
 import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.pdf.PdfAction;
 import com.itextpdf.text.pdf.PdfContentByte;
-import com.itextpdf.text.pdf.PdfDocument;
-import com.itextpdf.text.pdf.PdfObject;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
-import com.itextpdf.text.pdf.PdfWriter;
 
 // -u "http://blah.com" -i somefile.jpeg -s 1,44.5,22.3,3,22.2,22.2 some/dir
 //                                                          or some.file
@@ -110,9 +103,8 @@ import com.itextpdf.text.pdf.PdfWriter;
         try {
             PdfReader r = openPdf(in);
             PdfStamper s = openStamper(out, r);
-            Image i = openImage(imageFile);
             for (StampTuple st : stampLocations) {
-                stampPdf(s, i, url, st.x, st.y, st.page);
+                stampPdf(s, stampImage, url, st.x, st.y, st.page);
             }
             closeStamper(s);
             closePdf(r);
