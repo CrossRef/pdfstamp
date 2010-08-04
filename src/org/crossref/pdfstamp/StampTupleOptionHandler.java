@@ -9,7 +9,7 @@ import org.kohsuke.args4j.spi.Setter;
 
 public class StampTupleOptionHandler extends OptionHandler<StampTuple> {
 
-    protected StampTupleOptionHandler(CmdLineParser parser, OptionDef option,
+    public StampTupleOptionHandler(CmdLineParser parser, OptionDef option,
             Setter<? super StampTuple> setter) {
         super(parser, option, setter);
     }

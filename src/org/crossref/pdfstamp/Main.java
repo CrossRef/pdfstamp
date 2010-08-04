@@ -41,7 +41,7 @@ import com.itextpdf.text.pdf.PdfStamper;
     private boolean recursive = false;
     
     @Option(name="-u", usage="Target URL of the stamp.", 
-            required=false, multiValued=false)
+            required=false, multiValued=false, metaVar="URL")
     private String url = "";
     
     @Option(name="-i", usage="Image file containing image of the stamp.", 
@@ -129,6 +129,7 @@ import com.itextpdf.text.pdf.PdfStamper;
     }
     
     private void doMain(String... args) {
+        CmdLineParser.registerHandler(StampTuple.class, StampTupleOptionHandler.class);
         CmdLineParser parser = new CmdLineParser(this);
         try {
             parser.parseArgument(args);
