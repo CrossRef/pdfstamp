@@ -29,22 +29,22 @@ import com.itextpdf.text.pdf.PdfStamper;
 //                                                          or some.file
  class Main {
 
-    @Option(name="-l", usage="Location on page to apply stamp.",
+    @Option(name="-l", usage="Required. Location on page to apply stamp.",
             required=true, multiValued=true, metaVar="PAGE,X,Y")
     private List<StampTuple> stampLocations = new ArrayList<StampTuple>();
     
-    @Option(name="-r", usage="Descend recursively into directories.")
+    @Option(name="-r", usage="Optional. Descend recursively into directories.")
     private boolean recursive = false;
     
-    @Option(name="-u", usage="Target URL of the stamp.", 
+    @Option(name="-u", usage="Optional. Target URL of the stamp.", 
             required=false, multiValued=false, metaVar="URL")
     private String url = "";
     
-    @Option(name="-i", usage="Image file containing image of the stamp.", 
+    @Option(name="-i", usage="Required. Image file containing image of the stamp.", 
             required=true, multiValued=false)
     private File imageFile = new File(".");
     
-    @Option(name="-o", usage="Output directory.",
+    @Option(name="-o", usage="Optional. Output directory.",
             required=false, multiValued=false)
     private File outputDirectory = null;
     
@@ -96,18 +96,30 @@ import com.itextpdf.text.pdf.PdfStamper;
     }
     
     private void addStampsToFile(File in, File out) {
+        PdfReader r = null;
+        PdfStamper s = null;
         try {
-            PdfReader r = openPdf(in);
-            PdfStamper s = openStamper(out, r);
+            r = openPdf(in);
+            s = openStamper(out, r);
             for (StampTuple st : stampLocations) {
                 stampPdf(s, stampImage, url, st.x, st.y, st.page);
             }
-            closeStamper(s);
-            closePdf(r);
+            
         } catch (Exception e) {
-            System.err.println("\033[31m!!\033[30m Failed on " + in.getPath() 
+            System.err.println("!! Failed on " + in.getPath() 
                                     + " because of:");
             System.err.println(e);
+        } finally {
+            try {
+                if (s != null) {
+                    closeStamper(s);
+                }
+                if (r != null) {
+                    closePdf(r);
+                }
+            } catch (Exception e) {
+                
+            }
         }
     }
     
@@ -127,6 +139,13 @@ import com.itextpdf.text.pdf.PdfStamper;
     private void doMain(String... args) {
         CmdLineParser.registerHandler(StampTuple.class, StampTupleOptionHandler.class);
         CmdLineParser parser = new CmdLineParser(this);
+        
+        if (args.length == 0) {
+            System.err.println("pdfstamp usage:");
+            parser.printUsage(System.err);
+            System.exit(0);
+        }
+        
         try {
             parser.parseArgument(args);
             
