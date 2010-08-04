@@ -21,16 +21,16 @@ import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
 
-// -u "http://blah.com" -i somefile.jpeg -s 1,44.5,22.3,3,22.2,22.2 some/dir
+// -u "http://blah.com" -i somefile.jpeg -l 1,44.5,22.3,3,22.2,22.2 some/dir
 //                                                          or some.file
 
 // or:
-//-u "http://blah.com" -i somefile.jpeg -s 1,44.5,22.3 -s 3,22.2,22.2 some/dir
+//-u "http://blah.com" -i somefile.jpeg -l 1,44.5,22.3 -l 3,22.2,22.2 some/dir
 //                                                          or some.file
  class Main {
 
     @Option(name="-l", usage="Location on page to apply stamp.",
-            required=true, multiValued=true)
+            required=true, multiValued=true, metaVar="PAGE,X,Y")
     private List<StampTuple> stampLocations = new ArrayList<StampTuple>();
     
     @Option(name="-r", usage="Descend recursively into directories.")
