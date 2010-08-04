@@ -28,11 +28,7 @@ import com.itextpdf.text.pdf.PdfStamper;
 //-u "http://blah.com" -i somefile.jpeg -s 1,44.5,22.3 -s 3,22.2,22.2 some/dir
 //                                                          or some.file
  class Main {
-    
-    @Option(name="-p", usage="Page number of page to stamp.",
-            required=false, multiValued=false)
-    private int page = 1;
-    
+
     @Option(name="-l", usage="Location on page to apply stamp.",
             required=true, multiValued=true)
     private List<StampTuple> stampLocations = new ArrayList<StampTuple>();
@@ -48,7 +44,7 @@ import com.itextpdf.text.pdf.PdfStamper;
             required=true, multiValued=false)
     private File imageFile = new File(".");
     
-    @Option(name="-d", usage="Output directory.",
+    @Option(name="-o", usage="Output directory.",
             required=false, multiValued=false)
     private File outputDirectory = null;
     
