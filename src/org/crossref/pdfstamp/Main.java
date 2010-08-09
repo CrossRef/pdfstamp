@@ -191,7 +191,7 @@ import com.itextpdf.text.pdf.PdfStamper;
         CmdLineParser parser = new CmdLineParser(this);
         
         if (args.length == 0) {
-            System.err.println("pdfstamp usage:");
+            System.err.println("Usage: pdfstamp [options] <PDF-FILEs> | <DIR>");
             parser.printUsage(System.err);
             System.exit(0);
         }
