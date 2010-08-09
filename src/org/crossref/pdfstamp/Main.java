@@ -212,7 +212,6 @@ import com.itextpdf.text.pdf.PdfStamper;
     
     private void iterateDirectory(File dir) {
         for (String path : dir.list()) {
-            System.out.println(path);
             File pathFile = new File(dir.getPath() + File.separator + path);
             if (pathFile.isDirectory() && recursive) {
                 iterateDirectory(pathFile);
