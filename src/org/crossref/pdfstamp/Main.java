@@ -48,6 +48,10 @@ import com.itextpdf.text.pdf.PdfStamper;
             required=false, multiValued=false)
     private File outputDirectory = null;
     
+    @Option(name="-v", usage="Optional. Verbose output.",
+            required=false, multiValued=false)
+    private boolean verbose = false;
+    
     @Argument
     private List<String> paths = new ArrayList<String>();
     
@@ -60,9 +64,27 @@ import com.itextpdf.text.pdf.PdfStamper;
     
     private static PdfReader openPdf(File f) throws IOException {
         FileInputStream fIn = new FileInputStream(f);
-        PdfReader reader = new PdfReader(fIn);
-        fIn.close();
+        PdfReader reader = null;
+        try {
+            reader = new PdfReader(fIn);
+        } finally {
+            fIn.close();
+        }
         return reader;
+    }
+    
+    private static boolean isPdfFile(File f) throws IOException {
+        FileInputStream fIn = new FileInputStream(f);
+        byte[] magic = new byte[4];
+        boolean isPdf = false;
+        try {
+            fIn.read(magic);
+            isPdf = magic[0] == '%' && magic[1] == 'P' 
+                 && magic[2] == 'D' && magic[3] == 'F';
+        } finally {
+            fIn.close();
+        }
+        return isPdf;
     }
     
     private static void closePdf(PdfReader r) {
@@ -96,6 +118,20 @@ import com.itextpdf.text.pdf.PdfStamper;
     }
     
     private void addStampsToFile(File in, File out) {
+        try {
+            if (!isPdfFile(in)) {
+                if (verbose) {
+                    System.err.println("Skipping " + in.getPath() 
+                            + " because it doesn't look like a PDF file.");
+                }
+                return;
+            }
+        } catch (IOException e) {
+            System.err.println("Couldn't determine if " + in.getPath()
+                    + " is a PDF because of:");
+            System.err.println(e);
+        }
+        
         PdfReader r = null;
         PdfStamper s = null;
         try {
@@ -106,14 +142,16 @@ import com.itextpdf.text.pdf.PdfStamper;
             }
             
         } catch (Exception e) {
-            System.err.println("!! Failed on " + in.getPath() 
-                                    + " because of:");
+            System.err.println("Failed on " + in.getPath() + " because of:");
             System.err.println(e);
         } finally {
             try {
                 if (s != null) {
                     closeStamper(s);
                 }
+            } catch (Exception e) {
+            }
+            try {
                 if (r != null) {
                     closePdf(r);
                 }
@@ -174,6 +212,7 @@ import com.itextpdf.text.pdf.PdfStamper;
     
     private void iterateDirectory(File dir) {
         for (String path : dir.list()) {
+            System.out.println(path);
             File pathFile = new File(dir.getPath() + File.separator + path);
             if (pathFile.isDirectory() && recursive) {
                 iterateDirectory(pathFile);

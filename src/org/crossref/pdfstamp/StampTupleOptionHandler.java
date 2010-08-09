@@ -7,6 +7,11 @@ import org.kohsuke.args4j.spi.OptionHandler;
 import org.kohsuke.args4j.spi.Parameters;
 import org.kohsuke.args4j.spi.Setter;
 
+/**
+ * 
+ * 
+ * @author karl.j.ward@gmail.com
+ */
 public class StampTupleOptionHandler extends OptionHandler<StampTuple> {
 
     public StampTupleOptionHandler(CmdLineParser parser, OptionDef option,
