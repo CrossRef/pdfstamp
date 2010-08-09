@@ -29,31 +29,23 @@ public class StampTupleOptionHandler extends OptionHandler<StampTuple> {
         final String paramValue = params.getParameter(0);
         final String[] components = paramValue.split(",");
         
-        if (components.length % 3 != 0) {
-            /* Each StampTuple should have page,x,y . */
-            throw new CmdLineException("Must specify page,x,y for each stamp.");
+        if (components.length != 2) {
+            /* Each StampTuple should have x,y . */
+            throw new CmdLineException("Must specify X,Y for location.");
         }
         
-        for (int idx=0; idx<components.length; idx+=3) {
-            StampTuple st = new StampTuple();
-            
-            try {
-                st.page = Integer.parseInt(components[idx]);
-            } catch (NumberFormatException e) {
-                throw new CmdLineException("Page must be specified as an integer.");
-            }
-            
-            try {
-                st.x = Float.parseFloat(components[idx+1]);
-                st.y = Float.parseFloat(components[idx+2]);
-            } catch (NumberFormatException e) {
-                throw new CmdLineException("X and y must be specified as rational numbers.");
-            }
-            
-            setter.addValue(st);
+        StampTuple st = new StampTuple();
+        
+        try {
+            st.x = Float.parseFloat(components[0]);
+            st.y = Float.parseFloat(components[1]);
+        } catch (NumberFormatException e) {
+            throw new CmdLineException("X and Y must be specified as rational numbers.");
         }
         
-        return components.length / 3;
+        setter.addValue(st);
+        
+        return 1;
     }
 
 }

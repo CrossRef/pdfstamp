@@ -27,15 +27,19 @@ import com.itextpdf.text.pdf.PdfStamper;
 // or:
 //-u "http://blah.com" -i somefile.jpeg -l 1,44.5,22.3 -l 3,22.2,22.2 some/dir
 //                                                          or some.file
- class Main {
+public class Main {
 
-    @Option(name="-e", usage="Optional. Extension that is appended to the filename.",
-            required=true, multiValued=true)
-    private String outputExtension = "stamped";
+    @Option(name="-p", usage="Optional. Page number to stamp. -1 is the last page.",
+            required=false, multiValued=true, metaVar="NUMBER")
+    private List<Integer> pages = new ArrayList<Integer>();
     
     @Option(name="-l", usage="Required. Location on page to apply stamp.",
-            required=true, multiValued=true, metaVar="PAGE,X,Y")
-    private List<StampTuple> stampLocations = new ArrayList<StampTuple>();
+            required=true, multiValued=false, metaVar="X,Y")
+    private StampTuple stampLocation = new StampTuple();
+    
+    @Option(name="-e", usage="Optional. Extension appended to the PDF filename.",
+            required=false, multiValued=true, metaVar="STRING")
+    private String outputExtension = "stamped";
     
     @Option(name="-r", usage="Optional. Descend recursively into directories.")
     private boolean recursive = false;
@@ -106,14 +110,18 @@ import com.itextpdf.text.pdf.PdfStamper;
                                  float x, float y, int page) 
             throws DocumentException {
         PdfContentByte content = s.getOverContent(page);
-        content.saveState();
-        content.addImage(i, i.getWidth(), 0.0f, 0.0f, i.getHeight(), x, y);
-        content.setAction(new PdfAction(url), 
-                          x, 
-                          y + i.getHeight(), 
-                          x + i.getWidth(), 
-                          y);
-        content.restoreState();
+        if (content == null) {
+            throw new DocumentException("PDF does not have a page " + page + ".");
+        } else {
+            content.saveState();
+            content.addImage(i, i.getWidth(), 0.0f, 0.0f, i.getHeight(), x, y);
+            content.setAction(new PdfAction(url), 
+                              x, 
+                              y + i.getHeight(), 
+                              x + i.getWidth(), 
+                              y);
+            content.restoreState();
+        }
     }
     
     private static void closeStamper(PdfStamper s) throws DocumentException, 
@@ -141,10 +149,12 @@ import com.itextpdf.text.pdf.PdfStamper;
         try {
             r = openPdf(in);
             s = openStamper(out, r);
-            for (StampTuple st : stampLocations) {
-                stampPdf(s, stampImage, url, st.x, st.y, st.page);
+            for (int page : pages) {
+                if (page < 0) {
+                    page = r.getNumberOfPages() + 1 + page;
+                }
+                stampPdf(s, stampImage, url, stampLocation.x, stampLocation.y, page);
             }
-            
         } catch (Exception e) {
             System.err.println("Failed on " + in.getPath() + " because of:");
             System.err.println(e);
@@ -198,6 +208,11 @@ import com.itextpdf.text.pdf.PdfStamper;
         
         try {
             parser.parseArgument(args);
+            
+            if (pages.size() == 0) {
+                /* Add a default page 1. */
+                pages.add(1);
+            }
             
             try {
                 stampImage = openImage(imageFile);
