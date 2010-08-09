@@ -29,6 +29,10 @@ import com.itextpdf.text.pdf.PdfStamper;
 //                                                          or some.file
  class Main {
 
+    @Option(name="-e", usage="Optional. Extension that is appended to the filename.",
+            required=true, multiValued=true)
+    private String outputExtension = "stamped";
+    
     @Option(name="-l", usage="Required. Location on page to apply stamp.",
             required=true, multiValued=true, metaVar="PAGE,X,Y")
     private List<StampTuple> stampLocations = new ArrayList<StampTuple>();
@@ -162,12 +166,20 @@ import com.itextpdf.text.pdf.PdfStamper;
     }
     
     private File getOutFileForInFile(File in) {
-        if (outputDirectory != null) {
-            return new File(outputDirectory.getPath() + File.separator 
-                    + in.getName());
-        } else {
-            return new File(in.getPath() + ".out");
+        String[] parts = in.getName().split("\\.");
+        StringBuffer outName = new StringBuffer();
+        outName.append(parts[0]);
+        outName.append('_');
+        outName.append(outputExtension);
+        for (int i=1; i<parts.length; i++) {
+            outName.append('.');
+            outName.append(parts[i]);
         }
+        
+        File outParent = outputDirectory == null ? in.getParentFile()
+                                                 : outputDirectory;
+        
+        return new File(outParent.getPath() + File.separator + outName);
     }
     
     public static final void main(String... args) {
