@@ -44,7 +44,8 @@ import com.itextpdf.text.pdf.PdfStamper;
             required=true, multiValued=false)
     private File imageFile = new File(".");
     
-    @Option(name="-o", usage="Optional. Output directory.",
+    @Option(name="-o", usage="Optional. Output directory. If specified, output" +
+    		" files use the same filename as their corresponding input file.",
             required=false, multiValued=false)
     private File outputDirectory = null;
     
@@ -164,7 +165,7 @@ import com.itextpdf.text.pdf.PdfStamper;
     private File getOutFileForInFile(File in) {
         if (outputDirectory != null) {
             return new File(outputDirectory.getPath() + File.separator 
-                    + in.getName() + ".out");
+                    + in.getName());
         } else {
             return new File(in.getPath() + ".out");
         }
