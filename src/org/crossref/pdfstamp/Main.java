@@ -38,7 +38,7 @@ public class Main {
     private StampTuple stampLocation = new StampTuple();
     
     @Option(name="-e", usage="Optional. Extension appended to the PDF filename.",
-            required=false, multiValued=true, metaVar="STRING")
+            required=false, multiValued=true, metaVar="EXT")
     private String outputExtension = "stamped";
     
     @Option(name="-r", usage="Optional. Descend recursively into directories.")
@@ -70,6 +70,9 @@ public class Main {
         return Image.getInstance(f.getAbsolutePath());
     }
     
+    /**
+     * @return Answers a PdfReader for the File f.
+     */
     private static PdfReader openPdf(File f) throws IOException {
         FileInputStream fIn = new FileInputStream(f);
         PdfReader reader = null;
@@ -81,6 +84,10 @@ public class Main {
         return reader;
     }
     
+    /**
+     * @return Answers true if the first four bytes of File f match the
+     * PDF magic number - "%PDF".
+     */
     private static boolean isPdfFile(File f) throws IOException {
         FileInputStream fIn = new FileInputStream(f);
         byte[] magic = new byte[4];
@@ -95,10 +102,17 @@ public class Main {
         return isPdf;
     }
     
+    /**
+     * Close a PdfReader. Opposite of openPdf().
+     */
     private static void closePdf(PdfReader r) {
         r.close();
     }
     
+    /**
+     * @return Answers a PdfStamper for the PdfReader r, whose output will
+     * be placed in the File f.
+     */
     private static PdfStamper openStamper(File f, PdfReader r) 
             throws DocumentException, IOException {
         FileOutputStream fOut = new FileOutputStream(f);
@@ -106,6 +120,11 @@ public class Main {
         return stamper;
     }
     
+    /**
+     * Performs stamping of a PDF via a PdfStamper. An Image is inserted into
+     * the specified page number, 'page', along with a URL action for 'url',
+     * at the same location. The action area covers the the image.
+     */
     private static void stampPdf(PdfStamper s, Image i, String url,
                                  float x, float y, int page) 
             throws DocumentException {
@@ -115,15 +134,20 @@ public class Main {
         } else {
             content.saveState();
             content.addImage(i, i.getWidth(), 0.0f, 0.0f, i.getHeight(), x, y);
-            content.setAction(new PdfAction(url), 
-                              x, 
-                              y + i.getHeight(), 
-                              x + i.getWidth(), 
-                              y);
+            if (!url.equals("")) {
+                content.setAction(new PdfAction(url), 
+                                  x, 
+                                  y + i.getHeight(), 
+                                  x + i.getWidth(), 
+                                  y);
+            }
             content.restoreState();
         }
     }
     
+    /**
+     * Close a stamper. Opposite of openStamper().
+     */
     private static void closeStamper(PdfStamper s) throws DocumentException, 
             IOException {
         s.close();
@@ -186,7 +210,8 @@ public class Main {
             outName.append(parts[i]);
         }
         
-        File outParent = outputDirectory == null ? in.getParentFile()
+        File outParent = outputDirectory == null ? in.getAbsoluteFile()
+                                                     .getParentFile()
                                                  : outputDirectory;
         
         return new File(outParent.getPath() + File.separator + outName);
