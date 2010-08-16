@@ -62,6 +62,10 @@ public class Main {
             required=false, multiValued=false)
     private boolean verbose = false;
     
+    @Option(name="-s", usage="Optional. Scale factor. Defaults to 0.7.",
+            required=false, multiValued=false)
+    private float scaleFactor = 0.7f;
+    
     @Argument
     private List<String> paths = new ArrayList<String>();
     
@@ -127,14 +131,11 @@ public class Main {
      * the specified page number, 'page', along with a URL action for 'url',
      * at the same location. The action area covers the the image.
      */
-    private static void stampPdf(PdfStamper s, Image i, String url,
-                                 float x, float y, int page) 
+    private void stampPdf(PdfStamper s, Image i, float x, float y, int page) 
             throws DocumentException {
         /* Assume 72 DPI images if not specified. */
-        final float scaleX = (i.getDpiX() == 0 ? 72 : i.getDpiX()) / 100f;
-        final float scaleY = (i.getDpiY() == 0 ? 72 : i.getDpiY()) / 100f;
-        final float scaledImgWidth = scaleX * i.getWidth();
-        final float scaledImgHeight = scaleY * i.getHeight();
+        final float scaledImgWidth = scaleFactor * i.getWidth();
+        final float scaledImgHeight = scaleFactor * i.getHeight();
         
         PdfContentByte content = s.getOverContent(page);
         if (content == null) {
@@ -188,7 +189,7 @@ public class Main {
                 if (page < 0) {
                     page = r.getNumberOfPages() + 1 + page;
                 }
-                stampPdf(s, stampImage, url, stampLocation.x, stampLocation.y, page);
+                stampPdf(s, stampImage, stampLocation.x, stampLocation.y, page);
             }
         } catch (Exception e) {
             System.err.println("Failed on " + in.getPath() + " because of:");
