@@ -2,6 +2,8 @@ package org.crossref.pdfstamp;
 
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Image;
+
+import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -128,17 +130,23 @@ public class Main {
     private static void stampPdf(PdfStamper s, Image i, String url,
                                  float x, float y, int page) 
             throws DocumentException {
+        /* Assume 72 DPI images if not specified. */
+        final float scaleX = (i.getDpiX() == 0 ? 72 : i.getDpiX()) / 100f;
+        final float scaleY = (i.getDpiY() == 0 ? 72 : i.getDpiY()) / 100f;
+        final float scaledImgWidth = scaleX * i.getWidth();
+        final float scaledImgHeight = scaleY * i.getHeight();
+        
         PdfContentByte content = s.getOverContent(page);
         if (content == null) {
             throw new DocumentException("PDF does not have a page " + page + ".");
         } else {
             content.saveState();
-            content.addImage(i, i.getWidth(), 0.0f, 0.0f, i.getHeight(), x, y);
+            content.addImage(i, scaledImgWidth, 0.0f, 0.0f, scaledImgHeight, x, y);
             if (!url.equals("")) {
                 content.setAction(new PdfAction(url), 
-                                  x, 
-                                  y + i.getHeight(), 
-                                  x + i.getWidth(), 
+                                  x,
+                                  y + scaledImgHeight,
+                                  x + scaledImgWidth,
                                   y);
             }
             content.restoreState();
@@ -153,6 +161,9 @@ public class Main {
         s.close();
     }
     
+    /**
+     * Add stamps to a PDF file. A stamped PDF is written to 'out'.
+     */
     private void addStampsToFile(File in, File out) {
         try {
             if (!isPdfFile(in)) {
@@ -199,6 +210,10 @@ public class Main {
         }
     }
     
+    /**
+     * @return Answers the output filename for file 'in'. This will change
+     * depending on command line argument values.
+     */
     private File getOutFileForInFile(File in) {
         String[] parts = in.getName().split("\\.");
         StringBuffer outName = new StringBuffer();
