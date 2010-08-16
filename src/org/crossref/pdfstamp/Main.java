@@ -31,8 +31,8 @@ import com.itextpdf.text.pdf.PdfStamper;
 //                                                          or some.file
 public class Main {
 
-    @Option(name="-p", usage="Optional. Page number to stamp. -1 is the last page.",
-            required=false, multiValued=true, metaVar="NUMBER")
+    @Option(name="-p", usage="Optional. Page numbers to stamp. -1 is the last page.",
+            required=false, multiValued=true, metaVar="P1,P2...")
     private List<Integer> pages = new ArrayList<Integer>();
     
     @Option(name="-l", usage="Required. Location on page to apply stamp.",
