@@ -62,9 +62,9 @@ public class Main {
             required=false, multiValued=false)
     private boolean verbose = false;
     
-    @Option(name="-s", usage="Optional. Scale factor. Defaults to 0.7.",
+    @Option(name="-d", usage="Optional. Target DPI. Defaults to 300.",
             required=false, multiValued=false)
-    private float scaleFactor = 0.7f;
+    private int targetDpi = 300;
     
     @Argument
     private List<String> paths = new ArrayList<String>();
@@ -134,8 +134,10 @@ public class Main {
     private void stampPdf(PdfStamper s, Image i, float x, float y, int page) 
             throws DocumentException {
         /* Assume 72 DPI images if not specified. */
-        final float scaledImgWidth = scaleFactor * i.getWidth();
-        final float scaledImgHeight = scaleFactor * i.getHeight();
+        final float scaleFactorX = (i.getDpiX() == 0 ? 72f : i.getDpiX()) / targetDpi;
+        final float scaleFactorY = (i.getDpiY() == 0 ? 72f : i.getDpiY()) / targetDpi;
+        final float scaledImgWidth = scaleFactorX * i.getWidth();
+        final float scaledImgHeight = scaleFactorY * i.getHeight();
         
         PdfContentByte content = s.getOverContent(page);
         if (content == null) {
