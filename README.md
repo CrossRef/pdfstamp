@@ -30,3 +30,7 @@ New -t argument:
 
 Separate multiple values by a space, e.g. -t 1,1,Hello 2,2,World.
 To use the value of the -u argument, use "=URL" as the value for TEXT.
+
+Original project: https://github.com/CrossRef/pdfstamp
+
+Text stamping added by http://www.appazur.com
