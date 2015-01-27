@@ -1,3 +1,11 @@
+/**
+
+Changes to the original file, https://github.com/CrossRef/pdfstamp/blob/master/src/org/crossref/pdfstamp/Main.java
+are released under the the MIT License (MIT)
+and are copyright (c) 2015 Appazur Solutions Inc.
+
+*/
+
 package org.crossref.pdfstamp;
 
 import com.itextpdf.text.DocumentException;
@@ -16,12 +24,25 @@ import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
+import org.kohsuke.args4j.spi.StringArrayOptionHandler;
 
 import com.itextpdf.text.BadElementException;
 import com.itextpdf.text.pdf.PdfAction;
 import com.itextpdf.text.pdf.PdfContentByte;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.PdfStamper;
+
+import com.itextpdf.text.pdf.ColumnText;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.Font.FontFamily;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Element;
+
+import com.appazur.pdfstamp.TextStampTuple;
+
+
 
 // -u "http://blah.com" -i somefile.jpeg -l 1,44.5,22.3,3,22.2,22.2 some/dir
 //                                                          or some.file
@@ -65,7 +86,14 @@ public class Main {
     @Option(name="-d", usage="Optional. Target DPI. Defaults to 300.",
             required=false, multiValued=false)
     private int targetDpi = 300;
-    
+
+    // Note: separate multiple values by a space, e.g. -t 1,1,Hello 2,2,World.
+    // To use the value of the -u argument, use "=URL" as the value for TEXT.
+    @Option(name="-t", usage="Optional. Text to stamp. (Multiple values allowed.)",
+            handler = StringArrayOptionHandler.class,
+            required=true, multiValued=false, metaVar="X,Y,TEXT ...")
+    String[] textStampList;
+
     @Argument
     private List<String> paths = new ArrayList<String>();
     
@@ -132,7 +160,7 @@ public class Main {
      * at the same location. The action area covers the the image.
      */
     private void stampPdf(PdfStamper s, Image i, float x, float y, int page) 
-            throws DocumentException {
+            throws DocumentException, CmdLineException {
         /* Assume 72 DPI images if not specified. */
         final float scaleFactorX = (i.getDpiX() == 0 ? 72f : i.getDpiX()) / targetDpi;
         final float scaleFactorY = (i.getDpiY() == 0 ? 72f : i.getDpiY()) / targetDpi;
@@ -152,6 +180,37 @@ public class Main {
                                   x + scaledImgWidth,
                                   y);
             }
+
+            for(String tss: this.textStampList) {
+                if(verbose) {
+                    System.err.println(tss);
+                }
+                TextStampTuple tst = new TextStampTuple(tss);
+                ColumnText ct = new ColumnText( content );
+
+                // These are the coordinates where you want to add text.
+                // If the text does not fit inside it will be cropped.
+                ct.setSimpleColumn(tst.x, tst.y, tst.x+300, tst.y+50);
+                Phrase p;
+                // special case: if text is "=URL", use url as text.
+                if(tst.text.equals("=URL")) {
+                    tst.text = url;
+                }
+
+                if(tst.text.startsWith("http")) {
+                    p = new Phrase(tst.text);
+                }
+                else {
+                    p = new Phrase(tst.text,
+                        FontFactory.getFont("Trebuchet MS", 16,
+                            Font.BOLD, BaseColor.WHITE));
+                    ct.setAlignment(Element.ALIGN_RIGHT);
+                }
+
+                ct.setText(p);
+                ct.go();
+            }
+
             content.restoreState();
         }
     }
@@ -196,6 +255,9 @@ public class Main {
         } catch (Exception e) {
             System.err.println("Failed on " + in.getPath() + " because of:");
             System.err.println(e);
+            if(verbose) {
+                e.printStackTrace();
+            }
         } finally {
             try {
                 if (s != null) {
@@ -277,6 +339,11 @@ public class Main {
         } catch (CmdLineException e) {
             System.err.println(e.getMessage());
             parser.printUsage(System.err);
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            if(verbose) {
+                e.printStackTrace();
+            }
         }
     }
     
