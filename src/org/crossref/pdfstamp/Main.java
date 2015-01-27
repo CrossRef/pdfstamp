@@ -38,6 +38,7 @@ import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.Font.FontFamily;
 import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Element;
 
 import com.appazur.pdfstamp.TextStampTuple;
 
@@ -186,18 +187,24 @@ public class Main {
                 }
                 TextStampTuple tst = new TextStampTuple(tss);
                 ColumnText ct = new ColumnText( content );
+
                 // These are the coordinates where you want to add text.
                 // If the text does not fit inside it will be cropped.
                 ct.setSimpleColumn(tst.x, tst.y, tst.x+300, tst.y+50);
                 Phrase p;
                 // special case: if text is "=URL", use url as text.
                 if(tst.text.equals("=URL")) {
-                    p = new Phrase(url);
+                    tst.text = url;
+                }
+
+                if(tst.text.startsWith("http")) {
+                    p = new Phrase(tst.text);
                 }
                 else {
                     p = new Phrase(tst.text,
                         FontFactory.getFont("Trebuchet MS", 16,
                             Font.BOLD, BaseColor.WHITE));
+                    ct.setAlignment(Element.ALIGN_RIGHT);
                 }
 
                 ct.setText(p);
