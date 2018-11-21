@@ -32,9 +32,13 @@ import com.itextpdf.text.pdf.PdfStamper;
 public class Main {
 
     @Option(name="-p", usage="Optional. Page numbers to stamp. -1 is the last page.",
-            required=false, multiValued=true, metaVar="P1,P2...")
+            required=false, multiValued=true, metaVar="N")
     private List<Integer> pages = new ArrayList<Integer>();
-    
+
+    @Option(name="-pp", usage="Optional. Page range to stamp, inclusive of start and end. e.g. 2-5.",
+            required=false, multiValued=true, metaVar="N-N")
+    private List<String> pageRanges = new ArrayList<String>();
+
     @Option(name="-l", usage="Required. Location on page to apply stamp.",
             required=true, multiValued=false, metaVar="X,Y")
     private StampTuple stampLocation = new StampTuple();
@@ -248,10 +252,22 @@ public class Main {
             parser.printUsage(System.err);
             System.exit(0);
         }
-        
+
         try {
             parser.parseArgument(args);
-            
+
+            for (String value : this.pageRanges) {
+                try {
+                    String[] pair = value.split("-");
+                    for (Integer i = Integer.parseInt(pair[0]); i <= Integer.parseInt(pair[1]); i++) {
+                        pages.add(i);
+                    }
+                } catch (ArrayIndexOutOfBoundsException ex) {
+                    System.err.println("Invalid format for page range. Should be e.g. 5-10 .");
+                    System.exit(0);
+                }
+            }
+
             if (pages.size() == 0) {
                 /* Add a default page 1. */
                 pages.add(1);
