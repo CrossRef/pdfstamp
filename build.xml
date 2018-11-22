@@ -9,7 +9,7 @@
   </target>
 
   <target name="build" depends="init">
-    <javac srcdir="${src.dir}" destdir="${classes.dir}">
+    <javac srcdir="${src.dir}" destdir="${classes.dir}" target="1.7" source="1.7">
       <classpath>
         <fileset dir="${lib.dir}" includes="*.jar"/>
       </classpath>
