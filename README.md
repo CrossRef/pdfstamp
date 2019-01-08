@@ -8,7 +8,7 @@ Add a clickable image to PDFs.
 Make sure you have a Java runtime installed on your computer. Run `pdfstamp.jar` from this
 repository:
 
-    java -jar pdfstamp.jar --help
+    java -jar pdfstamp.jar
 
 # Options
 
